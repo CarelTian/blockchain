@@ -2,9 +2,8 @@
 
 pragma solidity ^0.8.3;
 
-/// @title Contract to agree on the lunch venue
-/// @author Dilum Bandara, CSIRO's Data61
-
+/// @title Contract to IP management
+/// @author Yuantian Lou
 
 contract IPcore{
 
@@ -20,17 +19,22 @@ contract IPcore{
         uint8 status;      // 0-invalid  1-active 2-on sale
 
     }
-    
     address public manager;   
     address public TxAddress;                 
     uint public globalID=0;
     mapping (uint => Property) public IPs;
     mapping (string => bool) public md5Exist; 
-    Property[] public transactionPool;
     event receiveETH(address sender,uint amount);
+    event Received(address sender, uint amount);
+    event FallbackCalled(address sender, uint amount);
 
-    constructor () {
+    constructor  ()  {
         manager = msg.sender;                   //Set contract creator as manager
+    }
+    receive() external payable { 
+    }
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
     }
 
     function registerIP(string memory category,string memory name, string memory description,
@@ -56,7 +60,7 @@ contract IPcore{
     function getIP(uint id) view  public returns (Property memory) {
         return IPs[id];
     }
-    function withdrawIP(uint id) public restricted returns(bool){
+    function invalidateIP(uint id) public restricted returns(bool){
         if (id<0 || id >=globalID){
             revert("invalid id");
         }
@@ -85,17 +89,35 @@ contract IPcore{
             revert("invalid id");
         }
         require(msg.sender == IPs[id].owner);
-        IPs[id].status=2;   //On sale status
-        transactionPool.push(IPs[id]);
+        IPs[id].status=2;   //On sale status                        
+        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("enableTrade(uint256,uint256)",id,price));
+        require(success,"Call failed");
+        bool isvalid=abi.decode(result,(bool));
+        require(isvalid,"invalid transaction");
     }
+    function withdrawIP(uint id) public{
+        if (id<0 || id >=globalID){
+            revert("invalid id");
+        }
+        require(msg.sender==IPs[id].owner);
+        IPs[id].status=1;    //active status
+        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("disableTrade(uint256)",id));
+        require(success,"Call failed");
+        bool isvalid=abi.decode(result,(bool));
+        require(isvalid,"invalid transaction");
+
+    }
+    
     function transfer(uint id) external payable{
         uint price=msg.value;
-        require(price!=0,"receive 0 ETH");
+        require(price!=0,"Transfer: Cannot send 0 ETH");
+
         emit receiveETH(msg.sender,msg.value);
-        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("transferVerify(uint, uint)",id,price));
+        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("transferVerify(uint256, uint256)",id,price));
         require(success,"Call failed");
         bool isvalid=abi.decode(result, (bool));
         require(isvalid,"invalid transaction");
+
         address formerOwner=IPs[id].owner;
         IPs[id].owner=msg.sender;
         payable(formerOwner).transfer(price);
