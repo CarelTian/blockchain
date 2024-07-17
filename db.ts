@@ -1,5 +1,12 @@
+/**
+ * @fileoverview Description of the file's purpose
+ * @author Reynor Lou
+ * @version 1.1.0
+ * @date 2024-7-18
+ */
+
 const mysql = require('mysql2');
-require('dotenv').config({ path: './db.env' });
+require('dotenv').config({ path: './config.env' });
 function creatDB(){
     const connection = mysql.createConnection({
         host: process.env.DB_HOST,   

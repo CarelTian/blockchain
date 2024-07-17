@@ -1,14 +1,20 @@
+/**
+ * @fileoverview Description of the file's purpose
+ * @author Reynor Lou
+ * @version 1.1.0
+ * @date 2024-7-18
+ */
+
 const {Web3} = require('web3');
 const fs = require('fs');
 const path = require('path');
 const BN=require('bn.js');
 const {creatDB,closeDB}=require('./db.ts');
-const {ask,closeReadline}=require('./utils.ts');
+const utils=require('./utils.ts');
 const { Command } = require('commander');
 const program = new Command();
-require('dotenv').config({ path: './db.env' });
+require('dotenv').config({ path: './config.env' });
 
-const contractAdd=
 
 console.log('-------------------- Intellectual property rights management----------------------')
 
@@ -31,17 +37,38 @@ async function applyIP(){
     console.log("Submit to waitlist successfully")
 }
 
-
-
-function test(){
-    console.log("Hi");
+async function sell_(id,price) {
+    const ret=await utils.sellIP(id,price);
+    console.log(ret);
 }
+async function withdraw_(id) {
+    const ret=await utils.withdraw(id);
+    console.log(ret);
+}
+async function getIP_(id) {
+    const ret=await utils.getIP(id);
+    console.log(ret);
+}
+
+async function transfer(id,price) {
+    const ret=await utils.transfer(id,price);
+    console.log(ret);
+}
+
 program
     .command('applyIP')
     .description('Execute applyIP')
     .action(applyIP);
 program
-    .command('test')
-    .description('Execute test')
-    .action(test);
+    .command('getIP <id>')
+    .description('get IP')
+    .action(getIP_);
+program
+    .command('sell <id> <price>')
+    .description('sell IP')
+    .action(sell_);
+program
+    .command('withdraw <id>')
+    .description('withdraw IP')
+    .action(withdraw_);
 program.parse(process.argv);

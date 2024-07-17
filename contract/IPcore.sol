@@ -3,7 +3,7 @@
 pragma solidity ^0.8.3;
 
 /// @title Contract to IP management
-/// @author Yuantian Lou
+/// @author Reynor Lou
 /// v1.0.0 contract address 0x52ce46e735489b8603d2d3e83f8e200f575585d7
 contract IPcore{
 
@@ -24,6 +24,7 @@ contract IPcore{
     uint public globalID=0;
     mapping (uint => Property) public IPs;
     mapping (string => bool) public md5Exist; 
+    event IPRegistered(uint id);
     event receiveETH(address sender,uint amount);
     event Received(address sender, uint amount);
     event FallbackCalled(address sender, uint amount);
@@ -55,6 +56,7 @@ contract IPcore{
         });
         IPs[id_]=ip;
         md5Exist[md5]=true;
+        emit IPRegistered(id_);
         return id_;
     }
     function getIP(uint id) view  public returns (Property memory) {
@@ -72,7 +74,7 @@ contract IPcore{
         TxAddress=addr;
     }
 
-    function restore(uint id) public restricted returns(bool){
+    function restoreIP(uint id) public restricted returns(bool){
         if (id<0 || id >=globalID){
             revert("invalid id");
         }
@@ -87,6 +89,9 @@ contract IPcore{
     function sellIP(uint id,uint price) public {
         if (id<0 || id >=globalID){
             revert("invalid id");
+        }
+        if(IPs[id].status==0){
+            revert("IP unavailable");
         }
         require(msg.sender == IPs[id].owner);
         IPs[id].status=2;   //On sale status                        
@@ -122,10 +127,13 @@ contract IPcore{
         IPs[id].owner=msg.sender;
         payable(formerOwner).transfer(price);
     }
+
+    function redeem() public restricted payable{
+        payable(manager).transfer(address(this).balance);
+    } 
     
     modifier restricted() {
         require (msg.sender == manager, "Only manager can call");
         _;
     }
-    
 }
