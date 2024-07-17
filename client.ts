@@ -8,6 +8,8 @@ const { Command } = require('commander');
 const program = new Command();
 require('dotenv').config({ path: './db.env' });
 
+const contractAdd=
+
 console.log('-------------------- Intellectual property rights management----------------------')
 
 async function applyIP(){
@@ -16,7 +18,7 @@ async function applyIP(){
     const path= await ask('Input your IP path: ');
     const name= await ask('Input your IP name: ');
     const des =await ask('Any describes?: ');
-    const sql = 'INSERT INTO waitlist VALUES (?,?,?,?,?)';
+    const sql = 'INSERT INTO waitlist(address,category,filename,name,des) VALUES (?,?,?,?,?)';
     let db=creatDB();
     db.query(sql,[address,category,path,name,des,(err,result)=>{
         if (err) {
@@ -28,6 +30,7 @@ async function applyIP(){
     closeReadline();
     console.log("Submit to waitlist successfully")
 }
+
 
 
 function test(){

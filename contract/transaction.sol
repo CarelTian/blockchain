@@ -4,6 +4,8 @@ pragma solidity ^0.8.3;
 
 /// @title Contract to Transaction verification
 /// @author Yuantian Lou
+// v1.0.0 contract address 0xbadba6877e35ce8f4282b5ba69cb950a9024faa2
+
 
 contract Transaction{
     address public manager;

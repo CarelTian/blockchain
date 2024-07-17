@@ -4,7 +4,7 @@ pragma solidity ^0.8.3;
 
 /// @title Contract to IP management
 /// @author Yuantian Lou
-
+/// v1.0.0 contract address 0x52ce46e735489b8603d2d3e83f8e200f575585d7
 contract IPcore{
 
     struct Property{
