@@ -6,10 +6,9 @@ import "remix_tests.sol";
 import "remix_accounts.sol";
 import "../contracts/IPcore.sol";
 
-contract IPcoreTestSuite {
-    IPcore ipCore;
+contract ipCore is IPcore{
 
-    address acc0;
+    address acc0;   
     address acc1;
     address acc2;
 
@@ -21,21 +20,18 @@ contract IPcoreTestSuite {
         acc2 = TestsAccounts.getAccount(2); // Third account
         
         // Instantiate the contract using acc0
-        ipCore = new IPcore();
     }
 
     /// Check manager
     function managerTest() public {
-        Assert.equal(ipCore.manager(), acc0, "Manager should be acc0");
+        Assert.equal(manager, acc0, "Manager should be acc0");
     }
-
+    
     /// Register an IP
     function registerIPTest() public {
-        // Ensure the caller is the manager
-        (bool success, ) = address(ipCore).call(abi.encodeWithSignature("registerIP(string,string,string,address,string,uint256)", "category1", "IP1", "Description1", acc0, "md5hash", block.timestamp));
-        Assert.ok(success, "Register IP should succeed");
-
-        IPcore.Property memory ip = ipCore.getIP(0);
+        registerIP("category1", "IP1", "Description1", acc0, "md5hash", block.timestamp);
+        
+        IPcore.Property memory ip = getIP(0);
         Assert.equal(ip.id, uint(0), "ID should be 0");
         Assert.equal(ip.category, "category1", "Category should be 'category1'");
         Assert.equal(ip.name, "IP1", "Name should be 'IP1'");
@@ -47,21 +43,15 @@ contract IPcoreTestSuite {
 
     /// Invalidate an IP
     function invalidateIPTest() public {
-        // Ensure the caller is the manager
-        (bool success, ) = address(ipCore).call(abi.encodeWithSignature("invalidateIP(uint256)", 0));
-        Assert.ok(success, "Invalidate IP should succeed");
-
-        IPcore.Property memory ip = ipCore.getIP(0);
+        invalidateIP(0);
+        Property memory ip = getIP(0);
         Assert.equal(ip.status, uint8(0), "Status should be 0");
     }
 
     /// Restore an IP
     function restoreIPTest() public {
-        // Ensure the caller is the manager
-        (bool success, ) = address(ipCore).call(abi.encodeWithSignature("restoreIP(uint256)", 0));
-        Assert.ok(success, "Restore IP should succeed");
-
-        IPcore.Property memory ip = ipCore.getIP(0);
+        restoreIP(0);
+        IPcore.Property memory ip = getIP(0);
         Assert.equal(ip.status, uint8(1), "Status should be 1");
     }
 
