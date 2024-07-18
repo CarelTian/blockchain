@@ -47,24 +47,24 @@ contract ipCore is IPcore{
         Property memory ip = getIP(0);
         Assert.equal(ip.status, uint8(0), "Status should be 0");
     }
-
+    
     /// Restore an IP
     function restoreIPTest() public {
         restoreIP(0);
         IPcore.Property memory ip = getIP(0);
         Assert.equal(ip.status, uint8(1), "Status should be 1");
     }
-
-    function checkSuccess() public {
-        // Use 'Assert' methods: https://remix-ide.readthedocs.io/en/latest/assert_library.html
-        Assert.ok(2 == 2, 'should be true');
-        Assert.greaterThan(uint(2), uint(1), "2 should be greater than 1");
-        Assert.lesserThan(uint(2), uint(3), "2 should be lesser than 3");
+    /// Test setting transaction address
+    function setTransactionTest() public {
+        setTransaction(acc1);
+        Assert.equal(TxAddress, acc1, "Transaction address should be acc1");
     }
 
-    function checkSuccess2() public pure returns (bool) {
-        // Use the return value (true or false) to test the contract
-        return true;
+    /// Test redeeming contract balance
+    function redeemTest() public {
+        redeem();
+        uint balance = address(this).balance;
+        Assert.equal(balance, uint(0), "Contract balance should be 0 after redeem");
     }
 
     /// Custom Transaction Context: https://remix-ide.readthedocs.io/en/latest/unittesting.html#customization
