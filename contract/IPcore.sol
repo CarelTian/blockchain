@@ -18,7 +18,7 @@ contract IPcore{
         address lessee;
         string md5;
         uint timestamp;
-        uint8 status;      // 0-invalid  1-active 2-on sale
+        uint8 status;      // 0-invalid  1-active 2- tradable
 
     }
     address public manager;   
