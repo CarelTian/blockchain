@@ -217,11 +217,8 @@ async function payContract(Gwei){
 }
 
 function ToHex(decimal) {
-    // 使用 BigInt 确保可以处理非常大的数值
     const bigIntValue = BigInt(decimal);
-    // 将 BigInt 转换为十六进制字符串，并移除前缀 "0x"
     const hexValue = bigIntValue.toString(16);
-    // 返回带有 "0x" 前缀的十六进制字符串
     return `0x${hexValue}`;
 }
 
