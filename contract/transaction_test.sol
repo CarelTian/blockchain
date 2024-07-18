@@ -54,6 +54,25 @@ contract transactionTest is Transaction {
         Assert.equal(tradable[1], false, "Trade status should be disabled");
         Assert.equal(prices[1], 0, "Price should be 0 Gwei");
     }
+    /// Test enabling trade with non-IPcore account
+    /// #sender: account-1
+    function enableTradeTestFail() public {
+        try this.enableTrade(1, 100) {
+            Assert.ok(false, "Only IPcore can enable trade");
+        } catch Error(string memory reason) {
+            Assert.equal(reason, "Only IP contract can call", "Expected 'Only IP contract can call' error");
+        }
+    }
+
+    /// Test disabling trade with non-IPcore account
+    /// #sender: account-1
+    function disableTradeTestFail() public {
+        try this.disableTrade(1) {
+            Assert.ok(false, "Only IPcore can disable trade");
+        } catch Error(string memory reason) {
+            Assert.equal(reason, "Only IP contract can call", "Expected 'Only IP contract can call' error");
+        }
+    }
     function transferVerifyTest() public {
         // Set IPcore address to acc0
         setIPcore(acc0);
@@ -64,17 +83,16 @@ contract transactionTest is Transaction {
         Assert.ok(success, "Transfer verify should succeed");
         Assert.equal(tradable[2], false, "Trade status should be disabled after transfer");
     }
+    /// Test transfer verification with non-IPcore account
+    /// #sender: account-1
+    function transferVerifyTestFail() public {
+        try this.transferVerify(2, 200) {
+            Assert.ok(false, "Only IPcore can verify transfer");
+        } catch Error(string memory reason) {
+            Assert.equal(reason, "Only IP contract can call", "Expected 'Only IP contract can call' error");
+        }
+    }
 
-    
-    function checkSuccess() public {
-        Assert.ok(2 == 2, 'should be true');
-        Assert.greaterThan(uint(2), uint(1), "2 should be greater than 1");
-        Assert.lesserThan(uint(2), uint(3), "2 should be lesser than 3");
-    }
-    
-    function checkSuccess2() public pure returns (bool) {
-        return true;
-    }
 
     /// Custom Transaction Context: https://remix-ide.readthedocs.io/en/latest/unittesting.html#customization
     /// #sender: account-1
