@@ -19,11 +19,12 @@ require('dotenv').config({ path: './config.env' });
 console.log('-------------------- Intellectual property rights management----------------------')
 
 async function applyIP(){
-    const address= await ask('Input your address: ');
-    const category= await ask('Input your category: ');
-    const path= await ask('Input your IP path: ');
-    const name= await ask('Input your IP name: ');
-    const des =await ask('Any describes?: ');
+    const rl=utils.openReadline();
+    const address= await utils.ask('Input your address: ',rl);
+    const category= await utils.ask('Input your category: ',rl);
+    const path= await utils.ask('Input your IP path: ',rl);
+    const name= await utils.ask('Input your IP name: ',rl);
+    const des =await utils.ask('Any describes?: ',rl);
     const sql = 'INSERT INTO waitlist(address,category,filename,name,des) VALUES (?,?,?,?,?)';
     let db=creatDB();
     db.query(sql,[address,category,path,name,des,(err,result)=>{
@@ -33,7 +34,7 @@ async function applyIP(){
         }
     }])
     closeDB(db);
-    closeReadline();
+    utils.closeReadline(rl);
     console.log("Submit to waitlist successfully")
 }
 
@@ -50,10 +51,16 @@ async function getIP_(id) {
     console.log(ret);
 }
 
-async function transfer(id,price) {
+async function buy_(id,price) {
     const ret=await utils.transfer(id,price);
     console.log(ret);
 }
+
+async function getPrice_(id) {
+    const ret=await utils.getPrice(id);
+    console.log(ret);
+}
+
 
 program
     .command('applyIP')
@@ -71,4 +78,12 @@ program
     .command('withdraw <id>')
     .description('withdraw IP')
     .action(withdraw_);
+program
+    .command('buy <id> <price>')
+    .description('buy IP')
+    .action(buy_);
+program
+    .command('getPrice <id>')
+    .description('buy IP')
+    .action(getPrice_);
 program.parse(process.argv);

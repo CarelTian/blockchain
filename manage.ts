@@ -31,13 +31,13 @@ async function VerifyIP(){
         if(result.length==0){
             console.log("wait list is empty");
             closeDB(db);
-            closeReadline();
+            utils.closeReadline(rl);
             return;
         }
         console.log(result);
     });
-    const id= await ask("Select the id you want to process",rl);
-    const ret= await ask("Do you approve it? (yes/no)",rl);
+    const id= await utils.ask("Select the id you want to process",rl);
+    const ret= await utils.ask("Do you approve it? (yes/no)",rl);
     sql = 'SELECT * FROM waitlist WHERE id=(?)';
     const result = await new Promise((resolve, reject) => {
         db.query(sql, [id], (err, result) => {
@@ -59,15 +59,15 @@ async function VerifyIP(){
         const timestamp = Math.floor(Date.now() / 1000);
         let receipt=await utils.registerIP(category,name,description,owner,md5,timestamp);
         console.log(receipt);
-        const event = receipt.events.IPRegistered;
-        const IP_id=event.returnValeus.id;
-        sql = 'INSERT INTO IP(IP_id,category,name,description,owner,lessee,md5,timestamp) VALUES (?,?,?,?,?,?,?,?)';
-        db.query(sql,[IP_id,category,path,name,description,owner,owner,md5,timestamp,(err,result)=>{
-            if (err) {
-                console.error('Insert error: ', err);
-                return;
-            }
-        }])
+       // const event = receipt.events.IPRegistered;
+        //const IP_id=event.returnValeus.id;
+        // sql = 'INSERT INTO IP(IP_id,category,name,description,owner,lessee,md5,timestamp) VALUES (?,?,?,?,?,?,?,?)';
+        // db.query(sql,[IP_id,category,path,name,description,owner,owner,md5,timestamp,(err,result)=>{
+        //     if (err) {
+        //         console.error('Insert error: ', err);
+        //         return;
+        //     }
+        // }])
         sql = 'delete FROM waitlist WHERE id=(?)'
         db.query(sql,[id],(err,result)=>{
             if (err) {
@@ -84,7 +84,7 @@ async function VerifyIP(){
         console.log("process successfully");
     }
     closeDB(db);
-    utils.closeReadline();
+    utils.closeReadline(rl);
 }
 
 async function getIP_(id) {
@@ -116,6 +116,11 @@ async function getBalance_() {
     console.log(ret);
 }
 
+async function payContract_(ETH) {
+    const ret=await utils.payContract(ETH);
+    console.log(ret);
+}
+
 program
     .command('verifyIP')
     .description('Execute VerifyIP')
@@ -125,7 +130,7 @@ program
     .description('Execute VerifyIP')
     .action(getIP_);
 program
-    .command('setTXAddress <address>')
+    .command('setTxAddress <address>')
     .description('Set transaction contract Address for IPcore contract')
     .action(setTransaction_);
 program
@@ -145,5 +150,8 @@ program
     .command('getBalance')
     .description('get balance of contract')
     .action(getBalance_);
-
+program
+    .command('payContract <ETH>')
+    .description('pay to contract')
+    .action(payContract_);
 program.parse(process.argv);

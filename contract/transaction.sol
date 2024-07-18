@@ -4,14 +4,15 @@ pragma solidity ^0.8.3;
 
 /// @title Contract to Transaction verification
 /// @author Reynor Lou
-// v1.0.0 contract address 0xbadba6877e35ce8f4282b5ba69cb950a9024faa2
-
+/// contract address
+// v1.0.0  0xbadba6877e35ce8f4282b5ba69cb950a9024faa2
+// v1.0.1  0x78c575b0707427f66906c1fa90230b02e6370f3f
 
 contract Transaction{
     address public manager;
     address public IPcore;
     mapping (uint =>bool) public tradable;   //id ->  if status on sale
-    mapping (uint =>uint) public prices;   // id ->  price(ETH) 
+    mapping (uint =>uint) public prices;   // id ->  price(Gwei) 
     constructor (){
         manager=msg.sender;
     }

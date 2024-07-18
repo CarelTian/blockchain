@@ -4,7 +4,9 @@ pragma solidity ^0.8.3;
 
 /// @title Contract to IP management
 /// @author Reynor Lou
-/// v1.0.0 contract address 0x52ce46e735489b8603d2d3e83f8e200f575585d7
+///  contract address
+/// v1.0.0  0x52ce46e735489b8603d2d3e83f8e200f575585d7
+/// v1.0.1  0x7f15c0e8de6abead049ca023cdf64821fe549b4f
 contract IPcore{
 
     struct Property{
@@ -25,7 +27,7 @@ contract IPcore{
     mapping (uint => Property) public IPs;
     mapping (string => bool) public md5Exist; 
     event IPRegistered(uint id);
-    event receiveETH(address sender,uint amount);
+    event receiveUnit(address sender,uint amount);
     event Received(address sender, uint amount);
     event FallbackCalled(address sender, uint amount);
 
@@ -114,11 +116,11 @@ contract IPcore{
     }
     
     function transfer(uint id) external payable{
-        uint price=msg.value;
-        require(price!=0,"Transfer: Cannot send 0 ETH");
+        uint price=msg.value / 1000000000;   //wei->Gwei
+        require(price!=0,"Transfer: Cannot send 0 Gwei");
 
-        emit receiveETH(msg.sender,msg.value);
-        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("transferVerify(uint256, uint256)",id,price));
+        emit receiveUnit(msg.sender,msg.value);
+        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("transferVerify(uint256,uint256)",id,price));
         require(success,"Call failed");
         bool isvalid=abi.decode(result, (bool));
         require(isvalid,"invalid transaction");

@@ -29,7 +29,7 @@ const abi = JSON.parse(fs.readFileSync('./contract/build/IPcore.abi'), 'utf8');
 const contract = new web3.eth.Contract(abi, contractAddress);
 
 const t_abi = JSON.parse(fs.readFileSync('./contract/build/Transaction.abi'), 'utf8');
-const t_contract = new web3.eth.Contract(abi, Txaddress);
+const t_contract = new web3.eth.Contract(t_abi, Txaddress);
 
 async function registerIP(category,name,description,owner,md5,timestamp){
     const latestBlock = await web3.eth.getBlock('latest');
@@ -55,6 +55,12 @@ async function getIP(id) {
     return value;
 }
 
+async function getPrice(id) {
+    const value = await t_contract.methods.prices(id).call();
+    return value;
+}
+
+
 async function getBalance() {
     const value = await contract.methods.getBalance().call();
     return value;
@@ -69,7 +75,7 @@ async function setTransaction(address) {
         from: ManagerAccount,
         to: contractAddress,
         data: contract.methods.setTransaction(address).encodeABI(),
-        gas: 500000,
+        gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
@@ -79,6 +85,7 @@ async function setTransaction(address) {
 }
 
 async function setCore(address) {
+
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
@@ -87,7 +94,7 @@ async function setCore(address) {
         from: ManagerAccount,
         to: Txaddress,
         data: t_contract.methods.setIPcore(address).encodeABI(),
-        gas: 500000,
+        gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
@@ -105,7 +112,7 @@ async function invalidateIP(id) {
         from: ManagerAccount,
         to: contractAddress,
         data: contract.methods.invalidateIP(id).encodeABI(),
-        gas: 500000,
+        gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
@@ -123,7 +130,7 @@ async function restoreIP(id) {
         from: ManagerAccount,
         to: contractAddress,
         data: contract.methods.restoreIP(id).encodeABI(),
-        gas: 500000,
+        gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
@@ -132,7 +139,7 @@ async function restoreIP(id) {
     return receipt;
 }
 
-async function sellIP(id,price) {
+async function sellIP(id,Gwei) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
@@ -140,8 +147,8 @@ async function sellIP(id,price) {
     const tx = {
         from: acc0,
         to: contractAddress,
-        data: contract.methods.sellIP(id,price).encodeABI(),
-        gas: 500000,
+        data: contract.methods.sellIP(id,Gwei).encodeABI(),
+        gas: 300000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
@@ -159,7 +166,7 @@ async function withdrawIP(id) {
         from: acc0,
         to: contractAddress,
         data: contract.methods.withdrawIP(id).encodeABI(),
-        gas: 500000,
+        gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
@@ -168,18 +175,18 @@ async function withdrawIP(id) {
     return receipt;
 }
 
-async function transfer(id, ETH) {
+async function transfer(id, Gwei) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
     const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
-    const valueInWei = web3.utils.toWei(ETH.toString(), 'ether');
+    const valueInWei = web3.utils.toWei(Gwei.toString(), 'gwei');
     const tx = {
         from: acc0,
         to: contractAddress,
         data: contract.methods.transfer(id).encodeABI(),
-        value: web3.utils.toHex(valueInWei),
-        gas: 500000,
+        value: ToHex(valueInWei),
+        gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
@@ -188,6 +195,35 @@ async function transfer(id, ETH) {
     return receipt;
 }
 
+async function payContract(Gwei){
+    const latestBlock = await web3.eth.getBlock('latest');
+    const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
+    const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
+    const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
+    const valueInWei = web3.utils.toWei(Gwei.toString(), 'gwei');
+    const value =ToHex(valueInWei);
+    // 构建交易对象
+    const tx = {
+        from: ManagerAccount,
+        to: contractAddress,
+        value: value,
+        gas: 3000000,
+        maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
+        maxFeePerGas: maxFeePerGas.toString(),
+    };
+    const signedTx = await web3.eth.accounts.signTransaction(tx, ManagerPrivateKey);
+    const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    return receipt;
+}
+
+function ToHex(decimal) {
+    // 使用 BigInt 确保可以处理非常大的数值
+    const bigIntValue = BigInt(decimal);
+    // 将 BigInt 转换为十六进制字符串，并移除前缀 "0x"
+    const hexValue = bigIntValue.toString(16);
+    // 返回带有 "0x" 前缀的十六进制字符串
+    return `0x${hexValue}`;
+}
 
 function openReadline() {
     const rl = readline.createInterface({
@@ -212,6 +248,7 @@ function getMD5(filepath){
 }
 module.exports = { ask, closeReadline,getMD5,registerIP,invalidateIP,
                     restoreIP,setCore,setTransaction,getIP,getBalance,
-                    sellIP,withdrawIP ,transfer
+                    sellIP,withdrawIP ,transfer,payContract,openReadline,
+                    getPrice
                 
                 };
