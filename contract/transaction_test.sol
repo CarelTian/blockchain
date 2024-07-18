@@ -29,16 +29,49 @@ contract transactionTest is Transaction {
 
     /// Test setting IP core
     function setIPcoreTest() public {
+        // Ensure the caller is the manager
         setIPcore(acc1);
-        Assert.equal(IPcore, acc1, "IPcore should be acc1");
+        Assert.equal(IPcore, acc1, "IPcore address should be acc1");
+
+        // Reset IPcore address to acc0 for subsequent tests
+        setIPcore(acc0);
+        Assert.equal(IPcore, acc0, "IPcore address should be acc0");
+    }
+    function enableTradeTest() public {
+        // Ensure the caller is IPcore
+        setIPcore(acc0);
+        enableTrade(1, 100);
+        
+        Assert.equal(tradable[1], true, "Trade status should be enabled");
+        Assert.equal(prices[1], 100, "Price should be 100 Gwei");
+    }
+    function disableTradeTest() public {
+        setIPcore(acc0);
+        // Ensure the trade is enabled before trying to disable it
+        enableTrade(1, 100);
+        disableTrade(1);
+
+        Assert.equal(tradable[1], false, "Trade status should be disabled");
+        Assert.equal(prices[1], 0, "Price should be 0 Gwei");
+    }
+    function transferVerifyTest() public {
+        // Set IPcore address to acc0
+        setIPcore(acc0);
+        // Enable trade for ID 2
+        enableTrade(2, 200);
+        // Verify transfer with the correct caller
+        bool success = transferVerify(2, 200);
+        Assert.ok(success, "Transfer verify should succeed");
+        Assert.equal(tradable[2], false, "Trade status should be disabled after transfer");
     }
 
+    
     function checkSuccess() public {
         Assert.ok(2 == 2, 'should be true');
         Assert.greaterThan(uint(2), uint(1), "2 should be greater than 1");
         Assert.lesserThan(uint(2), uint(3), "2 should be lesser than 3");
     }
-
+    
     function checkSuccess2() public pure returns (bool) {
         return true;
     }
