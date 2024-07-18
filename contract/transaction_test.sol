@@ -76,10 +76,6 @@ contract transactionTest is Transaction {
         return true;
     }
 
-    function checkFailure() public {
-        Assert.notEqual(uint(1), uint(1), "1 should not be equal to 1");
-    }
-
     /// Custom Transaction Context: https://remix-ide.readthedocs.io/en/latest/unittesting.html#customization
     /// #sender: account-1
     /// #value: 100
