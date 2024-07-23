@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "remix_tests.sol";
 import "remix_accounts.sol";
-import "../contracts/transaction.sol"; // 导入 Transaction 合约
+import "./Transaction.sol"; // 导入 Transaction 合约
 
 contract transactionTest is Transaction {
 
@@ -18,7 +18,6 @@ contract transactionTest is Transaction {
         acc0 = TestsAccounts.getAccount(0); // Default account
         acc1 = TestsAccounts.getAccount(1); // Second account
         acc2 = TestsAccounts.getAccount(2); // Third account
-
         // Instantiate the contract using acc0
     }
 
@@ -39,20 +38,35 @@ contract transactionTest is Transaction {
     }
     function enableTradeTest() public {
         // Ensure the caller is IPcore
-        setIPcore(acc0);
+        //setIPcore(acc0);
         enableTrade(1, 100);
         
         Assert.equal(tradable[1], true, "Trade status should be enabled");
-        Assert.equal(prices[1], 100, "Price should be 100 Gwei");
+        Assert.equal(tradePrices[1], 100, "Price should be 100 Gwei");
     }
     function disableTradeTest() public {
-        setIPcore(acc0);
+        //setIPcore(acc0);
         // Ensure the trade is enabled before trying to disable it
         enableTrade(1, 100);
         disableTrade(1);
 
         Assert.equal(tradable[1], false, "Trade status should be disabled");
-        Assert.equal(prices[1], 0, "Price should be 0 Gwei");
+        Assert.equal(tradePrices[1], 0, "Price should be 0 Gwei");
+    }
+    function enableLeaseTest() public {
+        // Ensure the caller is IPcore
+        enableLease(1, 200);
+        
+        Assert.equal(leaseable[1], true, "Lease status should be enabled");
+        Assert.equal(leasePrices[1], 200, "Price should be 200 Gwei");
+    }
+    function disableLeaseTest() public {
+        // Ensure the trade is enabled before trying to disable it
+        //enableT(1, 100);
+        disableLease(1);
+
+        Assert.equal(leaseable[1], false, "Lease status should be disabled");
+        Assert.equal(leasePrices[1], 0, "Price should be 0 Gwei");
     }
     /// Test enabling trade with non-IPcore account
     /// #sender: account-1
@@ -67,6 +81,24 @@ contract transactionTest is Transaction {
     /// Test disabling trade with non-IPcore account
     /// #sender: account-1
     function disableTradeTestFail() public {
+        try this.disableTrade(1) {
+            Assert.ok(false, "Only IPcore can disable trade");
+        } catch Error(string memory reason) {
+            Assert.equal(reason, "Only IP contract can call", "Expected 'Only IP contract can call' error");
+        }
+    }
+
+    function enableLeaseTestFail() public {
+        try this.enableLease(1, 100) {
+            Assert.ok(false, "Only IPcore can enable trade");
+        } catch Error(string memory reason) {
+            Assert.equal(reason, "Only IP contract can call", "Expected 'Only IP contract can call' error");
+        }
+    }
+
+    /// Test disabling lease with non-IPcore account
+    /// #sender: account-1
+    function disableLeaseTestFail() public {
         try this.disableTrade(1) {
             Assert.ok(false, "Only IPcore can disable trade");
         } catch Error(string memory reason) {
@@ -93,6 +125,26 @@ contract transactionTest is Transaction {
         }
     }
 
+
+    function leaseVerifyTest() public {
+        // Set IPcore address to acc0
+        setIPcore(acc0);
+        // Enable trade for ID 2
+        enableLease(2, 200);
+        // Verify transfer with the correct caller
+        bool success = leaseVerify(2, 200);
+        Assert.ok(success, "Lease verify should succeed");
+        Assert.equal(tradable[2], false, "Trade status should be disabled after lease");
+    }
+    /// Test lease verification with non-IPcore account
+    /// #sender: account-1
+    function leaseVerifyTestFail() public {
+        try this.leaseVerify(2, 200) {
+            Assert.ok(false, "Only IPcore can verify transfer");
+        } catch Error(string memory reason) {
+            Assert.equal(reason, "Only IP contract can call", "Expected 'Only IP contract can call' error");
+        }
+    }
 
     /// Custom Transaction Context: https://remix-ide.readthedocs.io/en/latest/unittesting.html#customization
     /// #sender: account-1

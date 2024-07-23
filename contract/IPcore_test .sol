@@ -4,13 +4,17 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "remix_tests.sol";
 import "remix_accounts.sol";
-import "../contracts/IPcore.sol";
+import "./IPCore.sol";
+import "./Transaction.sol";
+import "./BytesLib.sol";
 
-contract ipCore is IPcore{
 
+contract ipcoreTest is IPcore{
+    using BytesLib for bytes;
     address acc0;   
     address acc1;
     address acc2;
+    Transaction txcontract;
 
     /// 'beforeAll' runs before all other tests
     function beforeAll() public {
@@ -18,7 +22,9 @@ contract ipCore is IPcore{
         acc0 = TestsAccounts.getAccount(0); // Default account
         acc1 = TestsAccounts.getAccount(1); // Second account
         acc2 = TestsAccounts.getAccount(2); // Third account
-        
+        //deploy Transaction contract
+        txcontract = new Transaction();
+        txcontract.setIPcore(address(this));
         // Instantiate the contract using acc0
     }
 
@@ -56,9 +62,49 @@ contract ipCore is IPcore{
     }
     /// Test setting transaction address
     function setTransactionTest() public {
-        setTransaction(acc1);
-        Assert.equal(TxAddress, acc1, "Transaction address should be acc1");
+        setTransaction(address(txcontract));
+        Assert.equal(TxAddress, address(txcontract), "Transaction address should be txcontract address");
     }
+    
+    function leaseIPTest() public {
+        uint id= 0;
+        uint price = 10000; 
+        uint leaseEndTimestamp = block.timestamp + 1000;
+        leaseIP(id, price, leaseEndTimestamp);
+        bool flag = txcontract.leaseable(id);
+        Assert.ok(flag, "Lease status should be leaseable");
+    }
+    
+    function recycleIPTest() public {
+        uint id= 0;
+        recycleIP(id);
+        bool flag = txcontract.leaseable(id);
+        Assert.ok(!flag, "Lease status shouldn't be leaseable");
+    }
+
+     function leaseIP1Test() public {
+        uint id= 0;
+        uint price = 10000; 
+        uint leaseEndTimestamp = block.timestamp + 1000;
+        leaseIP(id, price, leaseEndTimestamp);
+        bool flag = txcontract.leaseable(id);
+        Assert.ok(flag, "Lease status should be leaseable");
+    }
+
+    /// #sender: account-1
+    /// #value: 1000000000000000
+    function leaseTest() public payable{
+        uint id= 0;
+        (bool success, bytes memory result) = address(this).delegatecall(abi.encodeWithSignature("lease(uint256)", id));
+         if(!success){
+            string memory errorMessage = abi.decode(result.slice(4,result.length-4),(string));
+            Assert.equal(errorMessage, "Can only be executed by the manager", errorMessage);
+         }else{
+            IPcore.Property memory ip = getIP(0);
+           Assert.equal(ip.owner, acc1, "Owner should be acc1");
+         }
+    }
+
 
     /// Test redeeming contract balance
     function redeemTest() public {

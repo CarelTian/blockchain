@@ -18,7 +18,8 @@ contract IPcore{
         address lessee;
         string md5;
         uint timestamp;
-        uint8 status;      // 0-invalid  1-active 2- tradable
+        uint leaseEndTimestamp;//lease end time
+        uint8 status;      // 0-invalid  1-active 2- tradable 3-leased
 
     }
     address public manager;   
@@ -54,6 +55,7 @@ contract IPcore{
             lessee:owner,
             md5:md5,
             timestamp:timestamp,
+            leaseEndTimestamp: 0,
             status: 1
         });
         IPs[id_]=ip;
@@ -71,7 +73,7 @@ contract IPcore{
         IPs[id].status=0;
         return true;
     }
-    
+  
     function setTransaction(address addr) public restricted { 
         TxAddress=addr;
     }
@@ -95,13 +97,14 @@ contract IPcore{
         if(IPs[id].status==0){
             revert("IP unavailable");
         }
-        require(msg.sender == IPs[id].owner);
+        require(msg.sender == IPs[id].owner,"Not the owner");
         IPs[id].status=2;   //On sale status                        
         (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("enableTrade(uint256,uint256)",id,price));
         require(success,"Call failed");
         bool isvalid=abi.decode(result,(bool));
         require(isvalid,"invalid transaction");
     }
+
     function withdrawIP(uint id) public{
         if (id<0 || id >=globalID){
             revert("invalid id");
@@ -126,8 +129,47 @@ contract IPcore{
         require(isvalid,"invalid transaction");
 
         address formerOwner=IPs[id].owner;
-        IPs[id].owner=msg.sender;
         payable(formerOwner).transfer(price);
+        IPs[id].owner=msg.sender;
+    }
+
+    function leaseIP(uint id,uint price, uint leaseEndTimestamp) public {
+        require(id>=0&&id<globalID,"Invalid id");
+        Property storage ip = IPs[id];
+        require(ip.status == 1,"IP not available for lease");
+        require(msg.sender == IPs[id].owner,"Not the owner");
+        require(leaseEndTimestamp>block.timestamp,"Invalid lease end timestamp");
+        ip.status = 3;//Leased status
+        ip.leaseEndTimestamp = leaseEndTimestamp;
+        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("enableLease(uint256,uint256)",id,price));
+        require(success,"Call failed");
+        bool isvalid=abi.decode(result,(bool));
+        require(isvalid,"invalid transaction");
+    }
+
+    function recycleIP(uint id) public{
+        require(id>=0 && id <globalID,"invalid id");
+        require(msg.sender==IPs[id].owner);
+        IPs[id].status=1;    //active status
+        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("disableLease(uint256)",id));
+        require(success,"Call failed");
+        bool isvalid=abi.decode(result,(bool));
+        require(isvalid,"invalid transaction");
+    }
+
+     function lease(uint id) external payable{
+        uint price=msg.value / 1000000000;   //wei->Gwei
+        require(price != 0, "Lease: Cannot send 0 Gwei");
+
+        emit receiveUnit(msg.sender,msg.value);
+        (bool success,bytes memory result)=TxAddress.call(abi.encodeWithSignature("leaseVerify(uint256,uint256)",id,price));
+        require(success,"Call failed");
+        bool isvalid=abi.decode(result, (bool));
+        require(isvalid,"invalid transaction");
+
+        address formerOwner=IPs[id].owner;
+        payable(formerOwner).transfer(price);
+        IPs[id].owner=msg.sender;
     }
 
     function redeem() public restricted payable{
