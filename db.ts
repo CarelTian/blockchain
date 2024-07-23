@@ -7,7 +7,7 @@
 
 const mysql = require('mysql2');
 require('dotenv').config({ path: './config.env' });
-function creatDB(){
+function connectDB(){
     const connection = mysql.createConnection({
         host: process.env.DB_HOST,   
         user: process.env.DB_USER, 
@@ -16,7 +16,7 @@ function creatDB(){
       });
     connection.connect(error => {
         if (error) {
-          console.error('connect database error: ', error);
+          console.error('Connect database error: ', error);
           return;
         }
       });
@@ -26,10 +26,10 @@ function creatDB(){
 function closeDB(connection){
     connection.end(error => {
         if (error) {
-          console.error('关闭连接失败: ', error);
+          console.error('Disconneted failed: ', error);
           return;
         }
       });
       
 }
-module.exports ={creatDB,closeDB} ;
+module.exports ={connectDB,closeDB} ;

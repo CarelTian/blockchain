@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const BN=require('bn.js');
 const {Web3} = require('web3');
-const {creatDB,closeDB}=require('./db.ts');
+const {connectDB,closeDB}=require('./db.ts');
 const utils=require('./utils.ts');
 const { Command } = require('commander');
 const program = new Command();
@@ -22,7 +22,7 @@ async function VerifyIP(){
     console.log("-------------- waitlist----------------");
     const rl=utils.openReadline();
     let sql = 'SELECT * FROM waitlist';
-    let db=creatDB();
+    let db=connectDB();
     db.query(sql,(err,result)=>{
         if (err) {
             console.error('Select error: ', err);
@@ -87,7 +87,7 @@ async function VerifyIP(){
     utils.closeReadline(rl);
 }
 
-async function getIP_(id) {
+async function getManagerIP_(id) {
     const ret=await utils.getIP(id);
     console.log(ret);
 }
@@ -96,8 +96,8 @@ async function setTransaction_(address) {
     const ret=await utils.setTransaction(address);
     console.log(ret);
 }
-async function setCore_(address) {
-     const ret =await utils.setCore(address);
+async function setIPCore_(address) {
+     const ret =await utils.setIPCore(address);
     console.log(ret);
 }
 
@@ -127,8 +127,8 @@ program
     .action(VerifyIP);
 program
     .command('getIP <id>')
-    .description('Execute VerifyIP')
-    .action(getIP_);
+    .description('Execute GetIP')
+    .action(getManagerIP_);
 program
     .command('setTxAddress <address>')
     .description('Set transaction contract Address for IPcore contract')
@@ -145,7 +145,7 @@ program
 program
     .command('setCoreAddress <address>')
     .description('Set IPcore address for transaction contract')
-    .action(setCore_);
+    .action(setIPCore_);
 program
     .command('getBalance')
     .description('get balance of contract')

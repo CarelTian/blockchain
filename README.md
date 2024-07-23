@@ -20,3 +20,15 @@ Struct Property is the definition of IP(Intellectual Property) with 9 member var
 TxAddress - The deployed address of transaction.sol
 
 Some functions are easy to understand, so I won't go into too much detail. The logic is that the manager has the authority to verify, enable, and disable any IP. I believe the IP management system cannot be completely decentralized because IP should be considered valuable. An organization can assess its value and present it to the public. However, the trade market is entirely free. Owners have full control over the tradable status and price of their property. This model is rare in the real world and makes the best use of blockchain features.
+
+
+
+
+
+#Readme
+npm install -g typescript
+
+tsc client.ts
+tsc manage.ts
+
+node client.js applyIP
