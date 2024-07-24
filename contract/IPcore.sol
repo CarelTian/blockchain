@@ -169,7 +169,7 @@ contract IPcore{
 
         address formerOwner=IPs[id].owner;
         payable(formerOwner).transfer(price);
-        IPs[id].owner=msg.sender;
+        IPs[id].lessee=msg.sender;
     }
 
     function redeem() public restricted payable{
