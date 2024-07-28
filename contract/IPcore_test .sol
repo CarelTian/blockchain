@@ -4,9 +4,9 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "remix_tests.sol";
 import "remix_accounts.sol";
-import "./IPCore.sol";
-import "./Transaction.sol";
-import "./BytesLib.sol";
+import "../contracts/IPcore.sol";
+import "../contracts/Transaction.sol";
+import "../contracts/BytesLib.sol";
 
 
 contract ipcoreTest is IPcore{
