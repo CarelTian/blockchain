@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "remix_tests.sol";
 import "remix_accounts.sol";
-import "./Transaction.sol"; // 导入 Transaction 合约
+import "../contracts/Transaction.sol";
 
 contract transactionTest is Transaction {
 
