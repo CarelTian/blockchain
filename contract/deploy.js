@@ -83,5 +83,5 @@ const deploy2 = async () => {
     console.log('Core Contract deployed at address:', receipt.contractAddress);
 };
 
-deploy1();  
-//deploy2();
+//deploy1();  
+deploy2();

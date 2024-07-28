@@ -60,8 +60,8 @@ async function VerifyIP(){
         console.log(receipt);
     //    const event = receipt.events.IPRegistered;
     //     const IP_id=event.returnValeus.id;
-        sql = 'INSERT INTO IP(IP_id,category,name,description,owner,lessee,md5,timestamp) VALUES (?,?,?,?,?,?,?,?)';
-        db.query(sql,[id,category,path,name,description,owner,owner,md5,timestamp,(err,result)=>{
+        sql = 'INSERT INTO IP(IP_id,category,path,name,description,owner,lessee,md5,timestamp) VALUES (?,?,?,?,?,?,?,?,?)';
+        db.query(sql,[id,category,filename,name,description,owner,owner,md5,timestamp,(err,result)=>{
             if (err) {
                 console.error('Insert error: ', err);
                 return;

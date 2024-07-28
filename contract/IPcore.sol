@@ -7,6 +7,7 @@ pragma solidity ^0.8.3;
 ///  contract address
 /// v1.0.0  0x52ce46e735489b8603d2d3e83f8e200f575585d7
 /// v1.0.1  0x3332663498005392b90ac5bb892475ffc6b83e84
+/// v1.0.2  0xba80f48732a430258db02eed78d68ef3166774ea
 contract IPcore{
 
     struct Property{
@@ -131,6 +132,7 @@ contract IPcore{
         address formerOwner=IPs[id].owner;
         payable(formerOwner).transfer(price);
         IPs[id].owner=msg.sender;
+        IPs[id].status=1;
     }
 
     function leaseIP(uint id,uint price, uint leaseEndTimestamp) public {
@@ -169,7 +171,8 @@ contract IPcore{
 
         address formerOwner=IPs[id].owner;
         payable(formerOwner).transfer(price);
-        IPs[id].owner=msg.sender;
+        IPs[id].lessee=msg.sender;
+        IPs[id].status=1;
     }
 
     function redeem() public restricted payable{

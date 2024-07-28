@@ -25,7 +25,11 @@ async function applyIP(){
     const path= await utils.ask('Input your IP path: ',rl);
     const name= await utils.ask('Input your IP name: ',rl);
     const des =await utils.ask('Any describes?: ',rl);
-
+    if(!fs.existsSync(path)){
+        console.log("file not exist");
+        utils.closeReadline(rl);
+        return;
+    }
     const sql = 'INSERT INTO waitlist(address,category,filename,name,des) VALUES (?,?,?,?,?)';
     let db=connectDB();
     db.query(sql,[address,category,path,name,des,(err,result)=>{
@@ -39,33 +43,33 @@ async function applyIP(){
     console.log("Submit to waitlist successfully")
 }
 
-async function sell_(id,price,address,privKey) {
-    const ret=await utils.sellIP(id,price,address,privKey);
+async function sell_(id,price) {
+    const ret=await utils.sellIP(id,price);
     console.log(ret);
 }
 
-async function withdraw_(id,address,privKey) {
-    const ret=await utils.withdraw(id,address,privKey);
+async function withdraw_(id) {
+    const ret=await utils.withdraw(id);
     console.log(ret);
 }
 
-async function transfer_(id,price,address,privKey) {
-    const ret=await utils.transfer(id,price,address,privKey);
+async function transfer_(id,price) {
+    const ret=await utils.transfer(id,price);
     console.log(ret);
 }
 
-async function leaseIP_(id,price,leaseEndTimestamp,address,privKey) {
-    const ret=await utils.leaseIP(id,price,leaseEndTimestamp,address,privKey);
+async function leaseIP_(id,price,leaseEndTimestamp) {
+    const ret=await utils.leaseIP(id,price,leaseEndTimestamp);
     console.log(ret);
 }
 
-async function recycleIP_(id,address,privKey) {
-    const ret=await utils.withdraw(id,address,privKey);
+async function recycleIP_(id) {
+    const ret=await utils.recycleIP(id);
     console.log(ret);
 }
 
-async function lease_(id,price,address,privKey) {
-    const ret=await utils.transfer(id,price,address,privKey);
+async function lease_(id,price) {
+    const ret=await utils.transfer(id,price);
     console.log(ret);
 }
 
@@ -90,31 +94,31 @@ program
     .description('get IP')
     .action(getIP_);
 program
-    .command('sell <id> <price> <address> <privKey>')
+    .command('sell <id> <price>')
     .description('sell IP')
     .action(sell_);
 program
-    .command('withdraw <id> <address> <privKey>')
+    .command('withdraw <id>')
     .description('withdraw IP')
     .action(withdraw_);
 program
-    .command('transfer <id> <price> <address> <privKey>')
+    .command('transfer <id> <price>')
     .description('transfer IP')
     .action(transfer_);
 program
-    .command('leaseIP <id> <price> <leaseEndTimestamp> <address> <privKey>')
+    .command('leaseIP <id> <price> <leaseEndTimestamp>')
     .description('lease IP')
-    .action(sell_);
+    .action(leaseIP_);
 program
-    .command('recycleIP <id> <address> <privKey>')
+    .command('recycleIP <id>')
     .description('recycle IP')
-    .action(withdraw_);
+    .action(recycleIP_);
 program
-    .command('lease <id> <price> <address> <privKey>')
+    .command('lease <id> <price>')
     .description('lease IP')
     .action(lease_);
 program
     .command('getPrice <id>')
-    .description('buy IP')
+    .description('get price IP')
     .action(getPrice_);
 program.parse(process.argv);

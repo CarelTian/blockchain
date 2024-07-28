@@ -24,9 +24,9 @@ const Txaddress= process.env.TX_ADDRESS;
 const ManagerAccount=process.env.MANAGER_ADDR;
 const ManagerPrivateKey=process.env.MANAGER_KEY;
 
-//ip' owner
-// const ipowner=process.env.ACCO_ADDR;
-// const ipownerKey=process.env.ACCO_KEY
+
+const ipowner=process.env.ACCO_ADDR;
+const ipownerKey=process.env.ACCO_KEY
 
 const ip_abi = JSON.parse(fs.readFileSync('./contract/build/IPcore.abi'), 'utf8');
 const ip_contract = new web3.eth.Contract(ip_abi, IpScoreAddress);
@@ -59,7 +59,7 @@ async function getIP(id) {
 }
 
 async function getPrice(id) {
-    const value = await t_contract.methods.prices(id).call();
+    const value = await t_contract.methods.tradePrices(id).call();
     return value;
 }
 
@@ -141,50 +141,50 @@ async function restoreIP(id) {
     return receipt;
 }
 
-async function sellIP(id,price,address,privKey) {
+async function sellIP(id,price) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
     const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
     const tx = {
-        from: address,
+        from: ipowner,
         to: IpScoreAddress,
         data:ip_contract.methods.sellIP(id,price).encodeABI(),
         gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privKey);
+    const signedTx = await web3.eth.accounts.signTransaction(tx, ipownerKey);
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     return receipt;
 }
 
-async function withdrawIP(id,address,privKey) {
+async function withdrawIP(id) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
     const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
     const tx = {
-        from: address,
+        from: ipowner,
         to: IpScoreAddress,
         data:ip_contract.methods.withdrawIP(id).encodeABI(),
         gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privKey);
+    const signedTx = await web3.eth.accounts.signTransaction(tx, ipownerKey);
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     return receipt;
 }
 
-async function transfer(id, price, address, privKey) {
+async function transfer(id, price) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
     const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
     const valueInWei = web3.utils.toWei(price.toString(), 'gwei');
     const tx = {
-        from: address,
+        from: ipowner,
         to: IpScoreAddress,
         data:ip_contract.methods.transfer(id).encodeABI(),
         value: ToHex(valueInWei),
@@ -192,57 +192,57 @@ async function transfer(id, price, address, privKey) {
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privKey);
+    const signedTx = await web3.eth.accounts.signTransaction(tx, ipownerKey);
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     return receipt;
 }
 
 
 
-async function leaseIP(id,price,leaseEndTimestamp,address,privKey) {
+async function leaseIP(id,price,leaseEndTimestamp) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
     const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
     const tx = {
-        from: address,
+        from: ipowner,
         to: IpScoreAddress,
         data:ip_contract.methods.sellIP(id,price,leaseEndTimestamp).encodeABI(),
         gas: 300000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privKey);
+    const signedTx = await web3.eth.accounts.signTransaction(tx, ipownerKey);
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     return receipt;
 }
 
-async function recycleIP(id,address,privKey) {
+async function recycleIP(id) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
     const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
     const tx = {
-        from: address,
+        from: ipowner,
         to: IpScoreAddress,
         data:ip_contract.methods.recycleIP(id).encodeABI(),
         gas: 3000000,
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privKey);
+    const signedTx = await web3.eth.accounts.signTransaction(tx, ipownerKey);
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     return receipt;
 }
 
-async function lease(id, price, address, privKey) {
+async function lease(id, price) {
     const latestBlock = await web3.eth.getBlock('latest');
     const baseFeePerGas = new BN(latestBlock.baseFeePerGas)
     const maxPriorityFeePerGas = new BN(web3.utils.toWei('3', 'gwei'));
     const maxFeePerGas =baseFeePerGas.add(maxPriorityFeePerGas);
     const valueInWei = web3.utils.toWei(price.toString(), 'gwei');
     const tx = {
-        from: address,
+        from: ipowner,
         to: IpScoreAddress,
         data:ip_contract.methods.transfer(id).encodeABI(),
         value: ToHex(valueInWei),
@@ -250,7 +250,7 @@ async function lease(id, price, address, privKey) {
         maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
         maxFeePerGas: maxFeePerGas.toString(),
     };
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privKey);
+    const signedTx = await web3.eth.accounts.signTransaction(tx, ipownerKey);
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     return receipt;
 }
